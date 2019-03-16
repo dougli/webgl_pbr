@@ -1,0 +1,6 @@
+# Define binary files
+*.bin binary
+*.gltf binary
+*.jpg binary
+*.jpeg binary
+*.png binary
