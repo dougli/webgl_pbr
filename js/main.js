@@ -110,7 +110,6 @@ class Main {
   async loadModels() {
     const models = [
       // '/models/head_lee_perry_smith',
-      // '/models/toyota_ae86',
       // '/models/gray_big_rock',
       '/models/mecha_04',
     ];
@@ -133,9 +132,14 @@ class Main {
           if (object instanceof THREE.Mesh) {
             const pbr = this.pbrShader.clone();
             const mat = object.material;
-            mat.map.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
-            pbr.uniforms.tDiffuse = new THREE.Uniform(mat.map);
+            if (mat.map) {
+              mat.map.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+              pbr.uniforms.tDiffuse = new THREE.Uniform(mat.map);
+            } else {
+              pbr.uniforms.tDiffuse.value.needsUpdate = true;
+            }
+
             if (mat.normalMap) {
               if (object.geometry instanceof THREE.BufferGeometry) {
                 const tangents = this.calculateTangents(object.geometry);
