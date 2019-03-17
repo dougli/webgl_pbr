@@ -75,7 +75,7 @@ void main() {
 
   // All glTF textures are in sRGB
   vec4 diffuseColor = gammaToLinear(texture2D(tDiffuse, vUV));
-  vec3 emissiveColor = emissive * texture2D(tEmissive, vUV).rgb;
+  vec3 emissiveColor = emissive * gammaToLinear(texture2D(tEmissive, vUV)).rgb;
 
   vec3 totalDiffuseLight = (1.0 - metal) * ambientLightColor;
   vec3 totalSpecularLight = vec3(0);
