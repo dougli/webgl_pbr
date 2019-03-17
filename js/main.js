@@ -29,6 +29,7 @@ class Main {
     const context = canvas.getContext('webgl2');
     this.renderer = new THREE.WebGLRenderer({canvas, context});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.gammaOutput = true;
     this.renderer.gammaFactor = 2.2;
     document.body.appendChild(this.renderer.domElement);
