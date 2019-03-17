@@ -91,7 +91,7 @@ void main() {
 
     vec3 kD = (vec3(1.0) - F) * (1.0 - metal);
     totalDiffuseLight += max(kD * dot(normal, light), 0.0) * directionalLights[i].color;
-    totalSpecularLight += D * F * G /
+    totalSpecularLight += saturate(D * F * G) * directionalLights[i].color /
       saturate(4.0 * max(dot(normal, halfway), 0.0) * max(dot(normal, view), 0.0) + 0.0001);
   }
   #endif

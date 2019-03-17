@@ -259,8 +259,12 @@ class Main {
     this.scene.add(light);
 
     const sunlight = new THREE.DirectionalLight(0xffffff, 1);
-    sunlight.position.set(-10, 10, 10);
+    sunlight.position.set(-10, 5, 10);
     this.scene.add(sunlight);
+
+    const bluelight = new THREE.DirectionalLight(0x7fbfff, 1);
+    bluelight.position.set(5, 5, 10);
+    this.scene.add(bluelight);
   }
 
   addListeners() {
