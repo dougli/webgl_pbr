@@ -3,7 +3,7 @@ uniform sampler2D tNormal;
 uniform sampler2D tMetallicRoughness;
 
 uniform float roughness;
-uniform float metalness;
+uniform float metallicness;
 uniform float specular;
 
 varying vec2 vUV;
@@ -44,12 +44,10 @@ float distributionGGX(vec3 normal, vec3 halfway, float roughness) {
 //
 // Default ior to 1.5 -- usually sufficient for most materials. Skin is 1.35
 // https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/PhysicallyBased
-vec3 schlickFresnel(vec3 view, vec3 halfway, vec4 materialColor, float ior, float metalness) {
+vec3 schlickFresnel(vec3 view, vec3 halfway, vec4 materialColor, float metalness) {
   float VdotH = dot(view, halfway);
   float approx = pow(abs(1.0 - max(VdotH, 0.0)), 5.0); // Schlick's approximation
-  float Fo = (1.0 - ior) / (1.0 + ior);
-  Fo = Fo * Fo;
-  vec3 FoColor = mix(vec3(Fo), materialColor.rgb, metalness);
+  vec3 FoColor = mix(vec3(0.04), materialColor.rgb, metalness);
   return FoColor + (1.0 - FoColor) * approx;
 }
 
@@ -68,10 +66,11 @@ float geometryGGXPartial(vec3 normal, vec3 l, float roughness) {
 }
 
 void main() {
-  vec3 normal = normalize(vTBN * (texture2D(tNormal, vUV).rgb * 2.0 - 1.0));
+  /* vec3 normal = normalize(vTBN * (texture2D(tNormal, vUV).rgb * 2.0 - 1.0)); */
+  vec3 normal = normalize(vTBN * vec3(0.0, 0.0, 1.0));
   vec3 view = normalize(vViewPosition);
   float rough = texture2D(tMetallicRoughness, vUV).g * roughness;
-  float metal = texture2D(tMetallicRoughness, vUV).b * metalness;
+  float metal = texture2D(tMetallicRoughness, vUV).b * metallicness;
 
   // All glTF textures are in sRGB
   vec4 diffuseColor = gammaToLinear(texture2D(tDiffuse, vUV));
@@ -84,15 +83,14 @@ void main() {
     vec3 light = directionalLights[i].direction;
     vec3 halfway = normalize(view + light);
 
-    if (dot(normal, halfway) > 0.0 && dot(normal, view) > 0.0) {
-      float D = distributionGGX(normal, halfway, rough);
-      vec3 F = schlickFresnel(light, halfway, diffuseColor, 1.5, metal);
-      float G = geometryGGXPartial(normal, light, rough) * geometryGGXPartial(normal, view, rough);
+    float D = distributionGGX(normal, halfway, rough);
+    vec3 F = schlickFresnel(light, halfway, diffuseColor, metal);
+    float G = geometryGGXPartial(normal, light, rough) * geometryGGXPartial(normal, view, rough);
 
-      vec3 kD = (vec3(1.0) - F) * (1.0 - metal);
-      totalDiffuseLight += kD * max(dot(normal, light), 0.0) * directionalLights[i].color;
-      totalSpecularLight += D * F * G / saturate(4.0 * dot(normal, halfway) * dot(normal, view));
-    }
+    vec3 kD = (vec3(1.0) - F) * (1.0 - metal);
+    totalDiffuseLight += max(kD * dot(normal, light), 0.0) * directionalLights[i].color;
+    totalSpecularLight += D * F * G /
+      saturate(4.0 * max(dot(normal, halfway), 0.0) * max(dot(normal, view), 0.0) + 0.0001);
   }
   #endif
 

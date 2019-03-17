@@ -58,12 +58,21 @@ class Main {
       return;
     }
 
-    const [vertexShader, fragmentShader] = await Promise.all([
+    const [
+      vertexShader,
+      fragmentShader,
+      dummyDiffuse,
+      dummyNormal,
+    ] = await Promise.all([
       vertex.text(),
       fragment.text(),
+      new Promise((resolve, reject) => {
+        new THREE.TextureLoader().load('/images/1x1.png', resolve, () => {}, reject);
+      }),
+      new Promise((resolve, reject) => {
+        new THREE.TextureLoader().load('/images/normal_1x1.png', resolve, () => {}, reject);
+      }),
     ]);
-
-    const dummyTexture = new THREE.TextureLoader().load('/images/1x1.png');
 
     this.pbrShader = new THREE.ShaderMaterial({
       vertexShader,
@@ -76,11 +85,11 @@ class Main {
       uniforms: THREE.UniformsUtils.merge([
         THREE.UniformsLib['lights'],
         {
-          tDiffuse: new THREE.Uniform(dummyTexture),
-          tNormal: new THREE.Uniform(dummyTexture),
-          tMetallicRoughness: new THREE.Uniform(dummyTexture),
-          roughness: 0.5,
-          metallicness: 0.0,
+          tDiffuse: new THREE.Uniform(dummyDiffuse),
+          tNormal: new THREE.Uniform(dummyNormal),
+          tMetallicRoughness: new THREE.Uniform(dummyDiffuse),
+          roughness: new THREE.Uniform(0.5),
+          metallicness: new THREE.Uniform(0.0),
         }
       ]),
       lights: true,
@@ -100,10 +109,10 @@ class Main {
 
   async loadModels() {
     const models = [
-      // '/models/head_lee_perry_smith',
+      '/models/head_lee_perry_smith',
       // '/models/toyota_ae86',
       // '/models/gray_big_rock',
-      '/models/mecha_04',
+      // '/models/mecha_04',
     ];
 
     for (const path of models) {
@@ -123,26 +132,33 @@ class Main {
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             const pbr = this.pbrShader.clone();
-            const material = object.material;
-            material.map.anisotropy = this.renderer.getMaxAnisotropy();
+            console.log(pbr);
+            const mat = object.material;
+            mat.map.anisotropy = this.renderer.getMaxAnisotropy();
 
-            pbr.uniforms.tDiffuse = new THREE.Uniform(material.map);
-            if (material.normalMap) {
+            pbr.uniforms.tDiffuse = new THREE.Uniform(mat.map);
+            if (mat.normalMap) {
               if (object.geometry instanceof THREE.BufferGeometry) {
                 const tangents = this.calculateTangents(object.geometry);
                 object.geometry.addAttribute('tangent', tangents);
-                pbr.uniforms.tNormal = new THREE.Uniform(material.normalMap);
+                pbr.uniforms.tNormal = new THREE.Uniform(mat.normalMap);
               } else if (object.geometry instanceof THREE.Geometry) {
                 console.error('Ignoring normal maps loaded through Geometry object');
               }
+            } else {
+              pbr.uniforms.tNormal.value.needsUpdate = true;
             }
 
-            pbr.uniforms.roughness = new THREE.Uniform(material.roughness);
-            pbr.uniforms.metalness = new THREE.Uniform(material.metalness);
-            pbr.uniforms.tMetallicRoughness = new THREE.Uniform(material.roughnessMap);
+            pbr.uniforms.roughness = new THREE.Uniform(mat.roughness);
+            pbr.uniforms.metallicness = new THREE.Uniform(mat.metalness);
+            if (mat.roughnessMap) {
+              pbr.uniforms.tMetallicRoughness = new THREE.Uniform(mat.roughnessMap);
+            } else {
+              pbr.uniforms.tMetallicRoughness.value.needsUpdate = true;
+            }
 
-            pbr.transparent = material.transparent;
-            pbr.side = material.side;
+            pbr.transparent = mat.transparent;
+            pbr.side = mat.side;
             object.material = pbr;
           }
         });
