@@ -109,10 +109,10 @@ class Main {
 
   async loadModels() {
     const models = [
-      '/models/head_lee_perry_smith',
+      // '/models/head_lee_perry_smith',
       // '/models/toyota_ae86',
       // '/models/gray_big_rock',
-      // '/models/mecha_04',
+      '/models/mecha_04',
     ];
 
     for (const path of models) {
@@ -132,9 +132,8 @@ class Main {
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             const pbr = this.pbrShader.clone();
-            console.log(pbr);
             const mat = object.material;
-            mat.map.anisotropy = this.renderer.getMaxAnisotropy();
+            mat.map.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
             pbr.uniforms.tDiffuse = new THREE.Uniform(mat.map);
             if (mat.normalMap) {

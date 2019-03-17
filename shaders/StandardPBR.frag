@@ -66,8 +66,7 @@ float geometryGGXPartial(vec3 normal, vec3 l, float roughness) {
 }
 
 void main() {
-  /* vec3 normal = normalize(vTBN * (texture2D(tNormal, vUV).rgb * 2.0 - 1.0)); */
-  vec3 normal = normalize(vTBN * vec3(0.0, 0.0, 1.0));
+  vec3 normal = normalize(vTBN * (texture2D(tNormal, vUV).rgb * 2.0 - 1.0));
   vec3 view = normalize(vViewPosition);
   float rough = texture2D(tMetallicRoughness, vUV).g * roughness;
   float metal = texture2D(tMetallicRoughness, vUV).b * metallicness;
