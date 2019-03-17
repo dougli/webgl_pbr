@@ -1,10 +1,12 @@
 uniform sampler2D tDiffuse;
 uniform sampler2D tNormal;
 uniform sampler2D tMetallicRoughness;
+uniform sampler2D tEmissive;
 
 uniform float roughness;
 uniform float metallicness;
 uniform float specular;
+uniform vec3 emissive;
 
 varying vec2 vUV;
 varying mat3 vTBN;
@@ -58,9 +60,9 @@ vec3 schlickFresnel(vec3 view, vec3 halfway, vec4 materialColor, float metalness
 // Based on Schlick approximation of Smith solved with GGX
 float geometryGGXPartial(vec3 normal, vec3 l, float roughness) {
   // biased the roughness based on Disney's modification to reduce "hotness"
-  float alphaBiased = (roughness + 1.0) / 2.0;
+  float alphaBiased = roughness + 1.0;
 
-  float k = alphaBiased * alphaBiased / 2.0;
+  float k = alphaBiased * alphaBiased / 8.0;
   float NdotV = saturate(dot(normal, l));
   return NdotV / (NdotV * (1.0 - k) + k);
 }
@@ -73,6 +75,7 @@ void main() {
 
   // All glTF textures are in sRGB
   vec4 diffuseColor = gammaToLinear(texture2D(tDiffuse, vUV));
+  vec3 emissiveColor = emissive * texture2D(tEmissive, vUV).rgb;
 
   vec3 totalDiffuseLight = (1.0 - metal) * ambientLightColor;
   vec3 totalSpecularLight = vec3(0);
@@ -95,6 +98,6 @@ void main() {
 
   // Output in gamma color space
   out_FragColor = linearToGamma(
-    vec4(diffuseColor.rgb * totalDiffuseLight + totalSpecularLight, diffuseColor.a)
+    vec4(diffuseColor.rgb * totalDiffuseLight + totalSpecularLight + emissiveColor, diffuseColor.a)
   );
 }

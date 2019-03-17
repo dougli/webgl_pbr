@@ -63,6 +63,7 @@ class Main {
       fragmentShader,
       dummyDiffuse,
       dummyNormal,
+      dummyEmissive,
     ] = await Promise.all([
       vertex.text(),
       fragment.text(),
@@ -71,6 +72,9 @@ class Main {
       }),
       new Promise((resolve, reject) => {
         new THREE.TextureLoader().load('/images/normal_1x1.png', resolve, () => {}, reject);
+      }),
+      new Promise((resolve, reject) => {
+        new THREE.TextureLoader().load('/images/emissive_1x1.png', resolve, () => {}, reject);
       }),
     ]);
 
@@ -88,8 +92,10 @@ class Main {
           tDiffuse: new THREE.Uniform(dummyDiffuse),
           tNormal: new THREE.Uniform(dummyNormal),
           tMetallicRoughness: new THREE.Uniform(dummyDiffuse),
+          tEmissive: new THREE.Uniform(dummyEmissive),
           roughness: new THREE.Uniform(0.5),
           metallicness: new THREE.Uniform(0.0),
+          emissive: new THREE.Uniform(new THREE.Color(0xffffff)),
         }
       ]),
       lights: true,
@@ -158,6 +164,14 @@ class Main {
               pbr.uniforms.tMetallicRoughness = new THREE.Uniform(mat.roughnessMap);
             } else {
               pbr.uniforms.tMetallicRoughness.value.needsUpdate = true;
+            }
+
+            pbr.uniforms.emissive = new THREE.Uniform(mat.emissive);
+            if (mat.emissiveMap) {
+              console.log(mat.emissiveMap);
+              pbr.uniforms.tEmissive = new THREE.Uniform(mat.emissiveMap);
+            } else {
+              pbr.uniforms.tEmissive.value.needsUpdate = true;
             }
 
             pbr.transparent = mat.transparent;
