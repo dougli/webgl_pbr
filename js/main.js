@@ -116,9 +116,9 @@ class Main {
 
   async loadModels() {
     const models = [
-      // '/models/head_lee_perry_smith',
+      '/models/head_lee_perry_smith',
       // '/models/gray_big_rock',
-      '/models/mecha_04',
+      // '/models/mecha_04',
     ];
 
     for (const path of models) {
@@ -147,10 +147,10 @@ class Main {
               pbr.uniforms.tDiffuse.value.needsUpdate = true;
             }
 
+            const tangents = this.calculateTangents(object.geometry);
+            object.geometry.addAttribute('tangent', tangents);
             if (mat.normalMap) {
               if (object.geometry instanceof THREE.BufferGeometry) {
-                const tangents = this.calculateTangents(object.geometry);
-                object.geometry.addAttribute('tangent', tangents);
                 pbr.uniforms.tNormal = new THREE.Uniform(mat.normalMap);
               } else if (object.geometry instanceof THREE.Geometry) {
                 console.error('Ignoring normal maps loaded through Geometry object');
