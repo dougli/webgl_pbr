@@ -116,9 +116,9 @@ class Main {
 
   async loadModels() {
     const models = [
-      '/models/head_lee_perry_smith',
+      // '/models/head_lee_perry_smith',
       // '/models/gray_big_rock',
-      // '/models/mecha_04',
+      '/models/mecha_04',
     ];
 
     for (const path of models) {
